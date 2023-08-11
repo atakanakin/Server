@@ -3,6 +3,7 @@ package com.atakan.mainserver.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.atakan.mainserver.constants.CURR1
 import com.atakan.mainserver.constants.CURR2
 import com.atakan.mainserver.constants.CURR3
@@ -32,7 +33,7 @@ class BroadcastReceiver: BroadcastReceiver() {
             intent?.getStringExtra(TIME),
             "Broadcast"
         )
-        viewModel?.updateClientData(RecentClient.client!!)
-        println(RecentClient.client)
+        viewModel.clientDataLiveData.postValue(RecentClient.client)
+        Log.d("Broadcast", "Package Received.")
     }
 }

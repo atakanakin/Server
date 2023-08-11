@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.atakan.mainserver"
     xmlns:tools="http://schemas.android.com/tools">
-
+    <queries>
+        <package android:name="com.atakan.mainclient" />
+    </queries>
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -29,15 +32,15 @@
             android:exported="true"
             android:enabled="true">
             <intent-filter>
-                <action android:name="aidlexample" />
-                <action android:name="messengerexample" />
+                <action android:name="aidl" />
+                <action android:name="messenger" />
             </intent-filter>
         </service>
         <receiver android:name=".service.BroadcastReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.atakan.somename" />
+                <action android:name="com.atakan.mainclient" />
             </intent-filter>
         </receiver>
     </application>

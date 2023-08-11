@@ -59,12 +59,11 @@ class ServerService : Service() {
                 "Messenger"
             )
 
-            viewModel?.clientDataLiveData?.postValue(RecentClient.client)
+            viewModel.clientDataLiveData.postValue(RecentClient.client)
             //clientDataViewModel.clientDataLiveData.postValue(RecentClient.client)
 
             // Send message to the client. The message contains server info
             val message = Message.obtain(this@IncomingHandler, 0)
-            println(message)
             val bundle = Bundle()
             connectionCount++
             bundle.putInt(CONNECTION_COUNT, connectionCount)
@@ -74,6 +73,7 @@ class ServerService : Service() {
             // The service can save the msg.replyTo object as a local variable
             // so that it can send a message to the client at any time
             msg.replyTo.send(message)
+            Log.d("Messenger", "Package Received.")
         }
     }
 
@@ -99,11 +99,10 @@ class ServerService : Service() {
                 time,
                 "AIDL"
             )
-            println(RecentClient.client)
-            viewModel?.clientDataLiveData?.postValue(RecentClient.client)
+            viewModel.clientDataLiveData.postValue(RecentClient.client)
             //clientDataViewModel.clientDataLiveData.postValue(RecentClient.client)
             //myApplication.clientDataViewModel.updateClientData(RecentClient.client!!)
-            Log.d("INCC", "GELDİ")
+            Log.d("AIDL", "Package Received.")
         }
     }
 
