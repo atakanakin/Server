@@ -11,20 +11,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
+import com.atakan.mainserver.constants.Colors
+import com.atakan.mainserver.presentation.screen.MainScreen
 import com.atakan.mainserver.presentation.screen.ServerScreen
+import com.atakan.mainserver.presentation.screen.deneme
 import com.atakan.mainserver.presentation.theme.MainServerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             MainServerTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = Colors.primaryWhite
                 ) {
-                    ServerScreen(context = this@MainActivity)
+                    deneme(context = this)
+                    //(context = this@MainActivity)
                 }
             }
         }

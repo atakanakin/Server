@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MainServer</string>
+    <string name="good_morning">Good Morning</string>
 </resources>
