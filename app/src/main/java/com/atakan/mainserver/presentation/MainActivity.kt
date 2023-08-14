@@ -1,5 +1,6 @@
 package com.atakan.mainserver.presentation
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.atakan.mainserver.presentation.screen.ServerScreen
 import com.atakan.mainserver.presentation.theme.MainServerTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +24,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ServerScreen()
+                    ServerScreen(context = this@MainActivity)
                 }
             }
         }
