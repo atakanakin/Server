@@ -15,7 +15,6 @@ import androidx.core.view.WindowCompat
 import com.atakan.mainserver.constants.Colors
 import com.atakan.mainserver.presentation.screen.MainScreen
 import com.atakan.mainserver.presentation.screen.ServerScreen
-import com.atakan.mainserver.presentation.screen.deneme
 import com.atakan.mainserver.presentation.theme.MainServerTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +28,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Colors.primaryWhite
                 ) {
-                    deneme(context = this)
+                    MainScreen(context = this)
                     //(context = this@MainActivity)
                 }
             }
