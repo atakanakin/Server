@@ -7,6 +7,8 @@ import java.io.FileInputStream
 import java.io.FileWriter
 import java.io.InputStreamReader
 import java.text.DecimalFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 fun readJson(fileName: String) : String{
@@ -37,12 +39,17 @@ fun formatDoubleWithCommas(value: Double): String {
 
 fun getGreeting(): String {
     val currentTime = Calendar.getInstance()
-    val hour = currentTime.get(Calendar.HOUR_OF_DAY)
 
-    return when (hour) {
+    return when (currentTime.get(Calendar.HOUR_OF_DAY)) {
         in 0..4 -> "Good night,"
         in 5..11 -> "Good morning,"
         in 12..17 -> "Good afternoon,"
         else -> "Good evening,"
     }
+}
+
+fun getCurrentDateFormatted(): String {
+    val currentDate = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    return currentDate.format(formatter)
 }

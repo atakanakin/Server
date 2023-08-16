@@ -1,6 +1,7 @@
 package com.atakan.mainserver.presentation.screen
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -43,9 +45,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,26 +66,42 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.atakan.mainserver.constants.Colors
 import com.atakan.mainserver.data.local.formatDoubleWithCommas
+import com.atakan.mainserver.data.local.getCurrentDateFormatted
 import com.atakan.mainserver.data.local.getGreeting
 import com.atakan.mainserver.data.local.model.History
 import com.atakan.mainserver.data.local.model.UserHistory
 import com.atakan.mainserver.data.local.model.UserWallet
 import com.atakan.mainserver.data.local.readJson
+import com.atakan.mainserver.data.local.writeJson
+import com.atakan.mainserver.presentation.ClientDataViewModel
 import com.atakan.mainserver.presentation.screen.components.HistoryGroup
 import com.atakan.mainserver.presentation.screen.components.HorizontalSwipeableColumns
 import com.atakan.mainserver.presentation.screen.components.IndicatorDots
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(context: Context) {
+fun MainScreen(context: Context, viewModel: ClientDataViewModel = hiltViewModel()) {
+    var boolPage = false
+    var isDetail by remember {
+        mutableStateOf(boolPage)
+    }
+
+    val currencyState by viewModel.clientDataLiveData.observeAsState()
+
     val (height, width) = LocalConfiguration.current.run { screenHeightDp.dp to screenWidthDp.dp }
     var visibilityState by remember{ mutableStateOf(false) }
-
 
     val jsonHistory = readJson("userHistory.json")
     var historyItems = Gson().fromJson(jsonHistory, UserHistory::class.java).history
@@ -94,80 +115,262 @@ fun MainScreen(context: Context) {
 
     var pagerState = rememberPagerState { 2 }
 
-    // Define a mutable state variable to track if the dialog is open
-    var isConvertDialogOpen by remember { mutableStateOf(false) }
 
-    val exchangeRate = 1.0
+
     val bottomSheetState = rememberBottomSheetScaffoldState(SheetState(skipPartiallyExpanded = false, skipHiddenState = false))
+
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
-
     BottomSheetScaffold(
-
+        scaffoldState = bottomSheetState,
         sheetSwipeEnabled = true,
         sheetPeekHeight = 0.dp,
         sheetContent = {
-            var amount: String by remember { mutableStateOf("") }
-            val equivalentAmount = amount.toDoubleOrNull()?.times(exchangeRate) ?: 0.0
-            DisposableEffect(keyboardController) {
-                onDispose {
-                    keyboardController?.hide()
-                }
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
-                modifier = Modifier
-                    .height(height - 200.dp)
-                    .fillMaxSize()
-                    .clickable {
-                        keyboardController?.hide()
-                    }
-            ) {
-                Box(modifier = Modifier.padding(20.dp)) {
-                    OutlinedTextField(
-                        leadingIcon = {
-                            Icon(
-                                imageVector = if (pagerState.currentPage == 0) Icons.Rounded.AttachMoney else Icons.Outlined.CurrencyBitcoin,
-                                contentDescription = null,
-                                tint = Colors.primaryBlack
-                            )
-                        },
-                        label = { Text(text = "Enter Amount") },
-                        modifier = Modifier.background(Colors.primaryWhite),
-                        value = amount,
-                        onValueChange = { newValue ->
-                            amount = newValue
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
+            key(currencyState)
+            {
+                if (currencyState != null && currencyState?.clientCurr1 != null) {
+                    if(!isDetail){
+                        var exchangeRate =
+                            if (pagerState.currentPage == 0) 1 / currencyState!!.clientRate1!! else currencyState!!.clientRate1!!
+                        var amount: String by remember { mutableStateOf("") }
+                        val equivalentAmount =
+                            amount.toDoubleOrNull()?.times(exchangeRate).toString().toDoubleOrNull()
+                                ?: 0.0
+                        DisposableEffect(keyboardController) {
+                            onDispose {
                                 keyboardController?.hide()
                             }
-                        )
-                    )
-                }
-                Box(modifier = Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = if (pagerState.currentPage == 1) Icons.Rounded.AttachMoney else Icons.Outlined.CurrencyBitcoin,
-                        contentDescription = null,
-                        tint = Colors.primaryBlack
-                    )
-                    Text(
-                        text = equivalentAmount.toString(),
-                        style = TextStyle(color = Colors.primaryBlack)
-                    )
-                }}
-                Box(modifier = Modifier.align(Alignment.CenterHorizontally).clip(shape = RoundedCornerShape(20.dp)).background(color = Colors.primaryGreen).clickable {  }.padding(20.dp)) {
-                    Text(
-                        text = "Convert",
-                        style = TextStyle(color = Colors.primaryWhite)
-                    )
+                        }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Top,
+                            modifier = Modifier
+                                .height(height - 200.dp)
+                                .fillMaxSize()
+                                .clickable {
+                                    keyboardController?.hide()
+                                }
+                        ) {
+                            Box(modifier = Modifier.padding(20.dp)) {
+                                OutlinedTextField(
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = if (pagerState.currentPage == 0) Icons.Rounded.AttachMoney else Icons.Outlined.CurrencyBitcoin,
+                                            contentDescription = null,
+                                            tint = Colors.primaryBlack
+                                        )
+                                    },
+                                    label = { Text(text = "Enter Amount") },
+                                    modifier = Modifier.background(Colors.primaryWhite),
+                                    value = amount,
+                                    onValueChange = { newValue ->
+                                        amount = newValue
+                                    },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    keyboardActions = KeyboardActions(
+                                        onDone = {
+                                            keyboardController?.hide()
+                                        }
+                                    )
+                                )
+                            }
+                            Box(modifier = Modifier.padding(20.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = if (pagerState.currentPage == 1) Icons.Rounded.AttachMoney else Icons.Outlined.CurrencyBitcoin,
+                                        contentDescription = null,
+                                        tint = Colors.primaryBlack
+                                    )
+                                    Text(
+                                        text = equivalentAmount.toString(),
+                                        style = TextStyle(color = Colors.primaryBlack)
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .clip(shape = RoundedCornerShape(20.dp))
+                                    .background(color = Colors.primaryGreen)
+                                    .clickable {
+                                        if (pagerState.currentPage == 0) {
+                                            if ((amount.toDoubleOrNull()
+                                                    ?: 0.0) > walletCurrent.balanceUSD
+                                            ) {
+                                                Toast
+                                                    .makeText(
+                                                        context,
+                                                        "Not enough currency",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                    .show()
+                                            } else {
+                                                val written = walletCurrent.copy(
+                                                    balanceBTC = walletCurrent.balanceBTC + equivalentAmount,
+                                                    balanceUSD = walletCurrent.balanceUSD - amount.toDouble()
+                                                )
+                                                writeJson("wallet.json", written)
+                                                val updateRead = readJson("wallet.json")
+                                                walletCurrent =
+                                                    Gson().fromJson(
+                                                        updateRead,
+                                                        UserWallet::class.java
+                                                    )
+                                                balanceState = walletCurrent
+                                                keyboardController?.hide()
+                                                scope.launch {
+                                                    bottomSheetState.bottomSheetState.hide()
+                                                }
+                                                // Write History
+                                                val mutableList = historyItems.toMutableList()
+                                                mutableList.add(
+                                                    0, History(
+                                                        getCurrentDateFormatted(),
+                                                        "Bought BTC",
+                                                        equivalentAmount
+                                                            .toString()
+                                                            .toDoubleOrNull()
+                                                            .toString(),
+                                                        amount
+                                                            .toDoubleOrNull()
+                                                            .toString()
+                                                    )
+                                                )
+                                                val writtenHistory = UserHistory(
+                                                    mutableList
+                                                )
+                                                writeJson("userHistory.json", writtenHistory)
+                                                val updatedJsonString = readJson("userHistory.json")
+                                                historyItems =
+                                                    Gson().fromJson(
+                                                        updatedJsonString,
+                                                        UserHistory::class.java
+                                                    ).history
+                                                fileState = historyItems
+                                                //
+                                                amount = ""
+                                            }
+                                        } else {
+                                            if ((amount.toDoubleOrNull()
+                                                    ?: 0.0) > walletCurrent.balanceBTC
+                                            ) {
+                                                Toast
+                                                    .makeText(
+                                                        context,
+                                                        "Not enough currency",
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                    .show()
+                                            } else {
+                                                val written = walletCurrent.copy(
+                                                    balanceBTC = walletCurrent.balanceBTC - amount.toDouble(),
+                                                    balanceUSD = walletCurrent.balanceUSD + equivalentAmount
+                                                )
+                                                writeJson("wallet.json", written)
+                                                val updateRead = readJson("wallet.json")
+                                                walletCurrent =
+                                                    Gson().fromJson(
+                                                        updateRead,
+                                                        UserWallet::class.java
+                                                    )
+                                                balanceState = walletCurrent
+                                                keyboardController?.hide()
+                                                scope.launch {
+                                                    bottomSheetState.bottomSheetState.hide()
+                                                }
+                                                // Write History
+                                                val mutableList = historyItems.toMutableList()
+                                                mutableList.add(
+                                                    0, History(
+                                                        getCurrentDateFormatted(),
+                                                        "Sold BTC",
+                                                        amount
+                                                            .toDoubleOrNull()
+                                                            .toString(),
+                                                        equivalentAmount
+                                                            .toString()
+                                                            .toDoubleOrNull()
+                                                            .toString()
+                                                    )
+                                                )
+                                                val writtenHistory = UserHistory(
+                                                    mutableList
+                                                )
+                                                writeJson("userHistory.json", writtenHistory)
+                                                val updatedJsonString = readJson("userHistory.json")
+                                                historyItems =
+                                                    Gson().fromJson(
+                                                        updatedJsonString,
+                                                        UserHistory::class.java
+                                                    ).history
+                                                fileState = historyItems
+                                                //
+                                                amount = ""
+                                            }
+                                        }
+                                    }
+                                    .padding(20.dp)
+                            ) {
+                                Text(
+                                    text = "Convert",
+                                    style = TextStyle(color = Colors.primaryWhite)
+                                )
+                            }
+                        }
+                    }
+                    else{
+                        Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.SpaceEvenly, modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp)) {
+                            val initialDateString = currencyState!!.time.toString()
+                            val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm:ss z", Locale.ENGLISH)
+                            sdf.timeZone = TimeZone.getTimeZone("UTC")
+
+                            val initialDate = sdf.parse(initialDateString)
+                            val calendar = Calendar.getInstance()
+                            calendar.time = initialDate
+
+                            sdf.timeZone = TimeZone.getTimeZone("GMT+3")
+                            val finalDateString = sdf.format(calendar.time)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                                Text(text = "Package Received", textAlign = TextAlign.Center)
+                                Text(text = finalDateString, textAlign = TextAlign.Center)
+                            }
+
+                            Text(text = "${ currencyState!!.clientCurr1.toString() }      ${currencyState!!.clientRate1.toString()}")
+
+
+                            Text(text = "${ currencyState!!.clientCurr2.toString() }      ${currencyState!!.clientRate2.toString()}")
+
+                            Text(text = "${ currencyState!!.clientCurr3.toString() }      ${currencyState!!.clientRate3.toString()}")
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                                Text(text = "IPC Method", textAlign = TextAlign.Center)
+                                Text(text = currencyState!!.ipcMethod, textAlign = TextAlign.Center)
+                            }
+                            //val bottomSheetState = rememberBottomSheetScaffoldState()
+                            //val scope = rememberCoroutineScope()
+
+                            Button(onClick = {
+                                Toast.makeText(context, currencyState!!.clientPackageName, Toast.LENGTH_SHORT).show()
+                            }, modifier = Modifier.align(Alignment.CenterHorizontally
+                            )) {
+                                Text(text = "Details")
+                            }
+                        }
+                    }
+                } else {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Text("NO SERVER CONNECTION", textAlign = TextAlign.Center)
+                    }
+
                 }
             }
         },
-        scaffoldState = bottomSheetState
     ) {
         if (bottomSheetState.bottomSheetState.hasExpandedState) {
         Box(
@@ -181,6 +384,7 @@ fun MainScreen(context: Context) {
                     }
                 }
         )
+
     }
 
         Column(
@@ -244,9 +448,9 @@ fun MainScreen(context: Context) {
 
                     HorizontalSwipeableColumns(
                         pagerState,
-                        historyItems,
                         walletCurrent,
-                        visibilityState
+                        visibilityState,
+                        balanceState
                     ) {
                         visibilityState = visibilityState.not()
                     }
@@ -268,26 +472,12 @@ fun MainScreen(context: Context) {
                             .clip(shape = RoundedCornerShape(35.dp, 35.dp, 35.dp, 35.dp))
                             .background(color = Colors.primaryBlack)
                             .clickable {
+                                isDetail = false
                                 scope.launch {
                                     bottomSheetState.bottomSheetState.expand()
                                 }
                                 /*
-                            val mutableList = historyItems.toMutableList()
-                            mutableList.add(0,History(
-                                "03/08/2023",
-                                "Bought BTC",
-                                "0.02",
-                                "342.45")
-                            )
-                            val written = UserHistory(
-                                mutableList
-                            )
-                            writeJson("userHistory.json", written)
-                            val updatedJsonString = readJson("userHistory.json")
-                            historyItems =
-                                Gson().fromJson(updatedJsonString, UserHistory::class.java).history
-                            println(historyItems.size)
-                            fileState = historyItems
+
                             */
                             }
                         ) {
@@ -309,7 +499,10 @@ fun MainScreen(context: Context) {
                             .clip(shape = RoundedCornerShape(35.dp, 35.dp, 35.dp, 35.dp))
                             .background(color = Colors.primaryWhite)
                             .clickable {
-
+                                isDetail = true
+                                scope.launch {
+                                    bottomSheetState.bottomSheetState.expand()
+                                }
                             }
                         )
                         {

@@ -22,9 +22,9 @@ import com.atakan.mainserver.data.local.model.UserWallet
 @Composable
 fun HorizontalSwipeableColumns(
     state: PagerState,
-    historyItems: List<History>,
     walletCurrent: UserWallet,
     visibilityState: Boolean,
+    balanceState: UserWallet,
     onVisibilityToggle: () -> Unit
 ) {
     Column(
@@ -42,7 +42,7 @@ fun HorizontalSwipeableColumns(
                         "Your USD Balance",
                         visibilityState,
                         onVisibilityToggle,
-                        walletCurrent
+                        balanceState
                     )
                 }
                 1 -> {
@@ -51,7 +51,7 @@ fun HorizontalSwipeableColumns(
                         "Your BTC Balance",
                         visibilityState,
                         onVisibilityToggle,
-                        walletCurrent
+                        balanceState
                     )
                 }
                 else -> {

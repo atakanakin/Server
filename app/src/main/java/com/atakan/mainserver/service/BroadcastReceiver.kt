@@ -14,13 +14,16 @@ import com.atakan.mainserver.constants.RATE2
 import com.atakan.mainserver.constants.RATE3
 import com.atakan.mainserver.constants.TIME
 import com.atakan.mainserver.data.model.Client
-import com.atakan.mainserver.data.model.MyApplicationHolder
 import com.atakan.mainserver.data.model.RecentClient
-
+import com.atakan.mainserver.presentation.ClientDataViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+@AndroidEntryPoint
 class BroadcastReceiver: BroadcastReceiver() {
-
+    @Inject
+    lateinit var viewModel: ClientDataViewModel
     override fun onReceive(context: Context?, intent: Intent?) {
-        val viewModel = MyApplicationHolder.getViewModel()
+
         RecentClient.client = Client(
             intent?.getStringExtra(PACKAGE_NAME),
             intent?.getStringExtra(PID),
@@ -33,7 +36,7 @@ class BroadcastReceiver: BroadcastReceiver() {
             intent?.getStringExtra(TIME),
             "Broadcast"
         )
-        viewModel.clientDataLiveData.postValue(RecentClient.client)
+        viewModel.updateClientData(RecentClient.client!!)
         Log.d("Broadcast", "Package Received.")
     }
 }

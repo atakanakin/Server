@@ -14,23 +14,25 @@ import com.atakan.mainserver.data.local.model.History
 
 @Composable
 fun HistoryGroup(historyItems: List<History>) {
-    LazyColumn {
-        items(historyItems.chunked(2)) { rowItems ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                rowItems.forEach { item ->
-                    HistoryCard(
-                        date = item.date,
-                        action = item.action,
-                        amountBTC = item.amountBTC,
-                        amountUSD = item.amountUSD
-                    )
+
+
+        LazyColumn {
+            items(historyItems.chunked(2)) { rowItems ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    rowItems.forEach { item ->
+                        HistoryCard(
+                            date = item.date,
+                            action = item.action,
+                            amountBTC = item.amountBTC,
+                            amountUSD = item.amountUSD
+                        )
+                    }
                 }
             }
-        }
     }
 }

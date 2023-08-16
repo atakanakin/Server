@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.atakan.mainserver.data.model.MyApplicationHolder
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.atakan.mainserver.presentation.ClientDataViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -35,21 +35,25 @@ import java.util.Locale
 import java.util.TimeZone
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ServerScreen(viewModel: ClientDataViewModel = MyApplicationHolder.getViewModel(), context: Context) {
+fun ServerScreen(viewModel: ClientDataViewModel = hiltViewModel(), context: Context) {
 
     // Observe changes to the LiveData and convert it to a Composable state
     val clientState by viewModel.clientDataLiveData.observeAsState()
 
 
-    if(clientState?.time == null){
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxSize()) {
+    if (clientState?.time == null) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxSize()
+        ) {
             Text(text = "No message")
         }
 
-    }
-    else{
+    } else {
         val bottomSheetState = rememberBottomSheetScaffoldState()
         val scope = rememberCoroutineScope()
 
@@ -60,8 +64,12 @@ fun ServerScreen(viewModel: ClientDataViewModel = MyApplicationHolder.getViewMod
             sheetContent = {
                 Box(
                     modifier = Modifier.height(300.dp)
-                ){
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxSize()){
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         Text("Package Name: ${clientState!!.clientPackageName}")
                         Text("Process ID:   ${clientState!!.clientProcessId}")
                     }
@@ -69,7 +77,8 @@ fun ServerScreen(viewModel: ClientDataViewModel = MyApplicationHolder.getViewMod
             },
 
             scaffoldState = bottomSheetState
-        ) {
+        )
+        {
             Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.SpaceEvenly, modifier = Modifier
                 .fillMaxSize()
                 .padding(20.dp)) {
@@ -111,7 +120,9 @@ fun ServerScreen(viewModel: ClientDataViewModel = MyApplicationHolder.getViewMod
                     Text(text = "Details")
                 }
             }
+
         }
 
     }
 }
+

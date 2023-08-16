@@ -20,10 +20,15 @@ import com.atakan.mainserver.constants.RATE1
 import com.atakan.mainserver.constants.RATE2
 import com.atakan.mainserver.constants.RATE3
 import com.atakan.mainserver.constants.TIME
-import com.atakan.mainserver.data.model.MyApplicationHolder
+import com.atakan.mainserver.presentation.ClientDataViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class ServerService : Service() {
+
+    @Inject
+    lateinit var viewModel: ClientDataViewModel
 
     companion object {
         // How many connection requests have been received since the service started
@@ -32,8 +37,6 @@ class ServerService : Service() {
         // Client might have sent an empty data
         const val NOT_SENT = "Not sent!"
     }
-
-    val viewModel = MyApplicationHolder.getViewModel()
 
     // Messenger IPC - Messenger object contains binder to send to client
     private val mMessenger = Messenger(IncomingHandler())
@@ -59,7 +62,7 @@ class ServerService : Service() {
                 "Messenger"
             )
 
-            viewModel.clientDataLiveData.postValue(RecentClient.client)
+            viewModel.updateClientData(RecentClient.client!!)
             //clientDataViewModel.clientDataLiveData.postValue(RecentClient.client)
 
             // Send message to the client. The message contains server info
@@ -99,7 +102,7 @@ class ServerService : Service() {
                 time,
                 "AIDL"
             )
-            viewModel.clientDataLiveData.postValue(RecentClient.client)
+            viewModel.updateClientData(RecentClient.client!!)
             //clientDataViewModel.clientDataLiveData.postValue(RecentClient.client)
             //myApplication.clientDataViewModel.updateClientData(RecentClient.client!!)
             Log.d("AIDL", "Package Received.")

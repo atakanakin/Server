@@ -72,7 +72,7 @@ fun HistoryCard(
                         .height(15.dp)
                         .width(15.dp))
 
-                Text(text = if(!isBought) amountBTC else amountUSD, style = TextStyle(color = Colors.primaryWhite.copy(alpha = 0.8f), fontSize = 15.sp))
+                Text(text = if(!isBought) String.format("%.3f", amountBTC.toDouble()) else String.format("%.3f", amountUSD.toDouble()), style = TextStyle(color = Colors.primaryWhite.copy(alpha = 0.8f), fontSize = 15.sp))
 
                 Icon(imageVector = Icons.Outlined.Sync, contentDescription = null, tint = Colors.primaryWhite)
 
@@ -81,7 +81,7 @@ fun HistoryCard(
                         .height(15.dp)
                         .width(15.dp))
 
-                Text(text = if(isBought) amountBTC else amountUSD, style = TextStyle(color = Colors.primaryWhite.copy(alpha = 0.8f), fontSize = 15.sp))
+                Text(text = if(isBought) String.format("%.3f", amountBTC.toDouble()) else String.format("%.3f", amountUSD.toDouble()), style = TextStyle(color = Colors.primaryWhite.copy(alpha = 0.8f), fontSize = 15.sp))
             }
         }
     }
