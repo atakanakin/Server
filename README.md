@@ -41,15 +41,17 @@ cd ServerApp
 
 ## Usage
 
-1. Launch the Server App on your device or emulator.
+1. Check README.txt inside the jsonFiles directory.
 
-2. The server app is now ready to receive data from client apps using AIDL, Messenger, or Broadcast.
+2. Launch the Server App on your device or emulator.
 
-3. As client apps connect to the server, their status will be displayed in the monitoring section.
+3. The server app is now ready to receive data from client apps using AIDL, Messenger, or Broadcast.
 
-4. Received data from client apps will be processed and monitored on the server application.
+4. As client apps connect to the server, their status will be displayed in the monitoring section.
 
-5. Use the monitoring information to ensure smooth data transfer and server operation.
+5. Received data from client apps will be processed and monitored on the server application.
+
+6. Use the monitoring information to ensure smooth data transfer and server operation.
 
 ## Dependencies
 
