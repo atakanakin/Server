@@ -4,7 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.atakan.mainserver.data.model.Client
 
-
+/*
 class ClientDataViewModel : ViewModel() {
     val clientDataLiveData = MutableLiveData(Client())
 
@@ -13,3 +13,4 @@ class ClientDataViewModel : ViewModel() {
         clientDataLiveData.value = client
     }
 }
+*/
